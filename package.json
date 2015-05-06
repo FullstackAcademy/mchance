@@ -7,5 +7,11 @@
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "Omri Bernstein",
-  "license": "ISC"
+  "license": "ISC",
+  "dependencies": {
+    "bluebird": "^2.9.25",
+    "chance": "^0.7.4",
+    "lodash": "^3.8.0",
+    "mongoose": "^4.0.2"
+  }
 }
