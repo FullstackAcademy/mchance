@@ -31,16 +31,11 @@ db.seed({
 	User: 1, 	// generate 1 user
 	Comment: 2 	// generate 2 comments
 })
-.then(function () {
-	return db.model('User').find({}).exec();
-})
-.then(function (users) {
+.then(function (dbCache) {
+	// dbCache contains refs and *saved* documents
 	console.log('---seeded users---');
-	console.log(users);
-	return db.model('Comment').find({}).exec();
-})
-.then(function (comments) {
+	console.log(dbCache.User);
 	console.log('---seeded comments---');
-	console.log(comments);
+	console.log(dbCache.Comment);
 });
 ```

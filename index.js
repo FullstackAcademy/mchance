@@ -122,16 +122,16 @@ module.exports = function (db) {
 	db.seed = function (specifications, options) {
 		options = options || {};
 		var dbCache = mchance.dbCache(specifications);
-		var allDocs = [];
-		_.forOwn(dbCache, function (eachDocs, ref) {
-			allDocs = allDocs.concat(eachDocs);
-		});
+		function eachDoc (doc) {
+			return trySave(doc, dbCache, options.retries || 1);
+		}
 		return drop()
 		.then(function () {
-			return Promise.map(allDocs, function (doc) {
-				return trySave(doc, dbCache, options.retries || 1);
+			return _.mapValues(dbCache, function (docs, ref) {
+				return Promise.map(docs, eachDoc);
 			});
-		});
+		})
+		.then(Promise.props);
 	};
 
 	return mchance;
