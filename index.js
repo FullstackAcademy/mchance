@@ -100,10 +100,27 @@ module.exports = function (db) {
 		});
 	}
 
+	// will attempt to save
+	// a failure will result in a re-try until numRetries reaches 0
+	function trySave (doc, dbCache, numRetries) {
+		return doc.save()
+		.then(null, function (err) {
+			console.error('Error while saving', err);
+			if (numRetries > 0) {
+				console.error('...trying again with different data...');
+				mchance.fillPaths(doc, dbCache);
+				return trySave(doc, dbCache, numRetries - 1);
+			} else {
+				console.error('...no more retries, moving on...');
+			}
+		});
+	}
+
 	// generates a *saved* database
 	// specifications should be an object where each key is a ref
 	// and each value is a number or a function that returns a number
-	db.seed = function (specifications) {
+	db.seed = function (specifications, options) {
+		options = options || {};
 		var dbCache = mchance.dbCache(specifications);
 		var allDocs = [];
 		_.forOwn(dbCache, function (eachDocs, ref) {
@@ -112,7 +129,7 @@ module.exports = function (db) {
 		return drop()
 		.then(function () {
 			return Promise.map(allDocs, function (doc) {
-				return doc.save();
+				return trySave(doc, dbCache, options.retries || 1);
 			});
 		});
 	};
