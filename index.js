@@ -4,11 +4,11 @@ var Chance = require('chance'),
 	Promise = require('bluebird');
 
 // db should be a mongoose database connection object
-module.exports = function (db) {
+module.exports = function (db, customSeed) {
 	// cached return value
 	if (db.mchance) return db.mchance;
 	
-	var mchance = db.mchance = Chance();
+	var mchance = db.mchance = Chance(customSeed);
 
 	mchance.title = function (options) {
 		options = options || {};
