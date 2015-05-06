@@ -3,14 +3,12 @@ var Chance = require('chance'),
 	Types = require('mongoose').Schema.Types,
 	Promise = require('bluebird');
 
-var mchance;
-
 // db should be a mongoose database connection object
 module.exports = function (db) {
 	// cached return value
-	if (mchance) return mchance;
+	if (db.mchance) return db.mchance;
 	
-	mchance = Chance();
+	var mchance = db.mchance = Chance();
 
 	mchance.title = function (options) {
 		options = options || {};
