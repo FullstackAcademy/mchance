@@ -25,7 +25,7 @@ db.seed({
 	Comment: 2 	// generate 2 comments
 })
 .then(function (dbCache) {
-	// dbCache contains refs and *saved* documents
+	// dbCache contains ref names and *saved* documents
 	console.log('---seeded users---');
 	console.log(dbCache.User);
 	console.log('---seeded comments---');
