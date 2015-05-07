@@ -20,6 +20,18 @@ module.exports = function (db, customSeed) {
 		}, '').slice(0, -1);
 	};
 
+	// generates an array path, using `seedn` to determine the number of elements
+	// mchance.path calls this function for arrays
+	// and this function calls mchance.path for each array element
+	function genArrayPath (pathObj) {
+		var seedn = pathObj.options.seedn || 1;
+		if (typeof seedn == 'function') seedn = seedn.call(mchance);
+		var innerSeed = mchance.path.bind(mchance, pathObj.caster);
+		return mchance.n(innerSeed, seedn).filter(function (elem) {
+			return elem !== undefined;
+		});
+	}
+
 	// generates based on a mongoose path object
 	// and optionally a database cache (for refs)
 	mchance.path = function (pathObj, dbCache) {
@@ -29,14 +41,8 @@ module.exports = function (db, customSeed) {
 			if (prob > Math.random()) return;
 		}
 		var type = pathObj.options.type;
-		if (_.isArray(type)) {
-			var seedn = pathObj.options.seedn || 1;
-			if (typeof seedn == 'function') seedn = seedn.call(this);
-			var innerSeed = this.path.bind(this, pathObj.caster);
-			return this.n(innerSeed, seedn).filter(function (elem) {
-				return elem !== undefined;
-			});
-		} else if (type === Types.ObjectId && dbCache) {
+		if (_.isArray(type)) return genArrayPath(pathObj);
+		else if (type === Types.ObjectId && dbCache) {
 			var ref = pathObj.options.ref;
 			return this.pick(dbCache[ref])._id;
 		} else {
@@ -64,6 +70,15 @@ module.exports = function (db, customSeed) {
 		return this.fillPaths(doc, dbCache);
 	};
 
+	// generate n empty docs of model given by ref
+	function nEmptyDocs (n, ref) {
+		var model = db.model(ref);
+		n = (typeof n == 'function' ? n.call(mchance) : n);
+		return _.times(n, function () {
+			return new model();
+		});
+	}
+
 	// generates a cache of documents where each key is a ref
 	// and each value is generated documents
 	// fills refs using itself
@@ -71,20 +86,14 @@ module.exports = function (db, customSeed) {
 	// and each value is a number or a function that returns a number
 	mchance.dbCache = function (specifications) {
 		var mchance = this;
-		var dbCache = {};
-		_.forOwn(specifications, function (n, ref) {
-			var model = db.model(ref);
-			n = (typeof n == 'function' ? n.call(mchance) : n);
-			dbCache[ref] = _.times(n, function () {
-				return new model();
-			});
-		});
-		_.forOwn(dbCache, function (docs, ref) {
-			docs.forEach(function (doc) {
-				mchance.fillPaths(doc, dbCache);
+		return _.chain(specifications)
+		.mapValues(nEmptyDocs)
+		.mapValues(function (docs, ref, dbCache) {
+			return docs.map(function (doc) {
+				return mchance.fillPaths(doc, dbCache);
 			});
 		})
-		return dbCache;
+		.value();
 	};
 
 	// drops the database
