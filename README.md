@@ -5,6 +5,8 @@
 ### Example
 
 ```js
+// of course first make sure to `npm install mongoose mchance`
+
 var mongoose = require('mongoose');
 var db = mongoose.connect('mongodb://localhost:27017/insert-db-name-here').connection;
 var mchance = require('mchance')(db);
