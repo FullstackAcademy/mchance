@@ -1,6 +1,5 @@
 var Chance = require('chance'),
 	_ = require('lodash'),
-	Types = require('mongoose').Schema.Types,
 	Promise = require('bluebird');
 
 // db should be a mongoose database connection object
@@ -40,10 +39,9 @@ module.exports = function (db, customSeed) {
 			var prob = (typeof seedProb == 'function' ? seedProb() : seedProb);
 			if (prob > Math.random()) return;
 		}
-		var type = pathObj.options.type;
-		if (_.isArray(type)) return genArrayPath(pathObj);
-		else if (type === Types.ObjectId && dbCache) {
-			var ref = pathObj.options.ref;
+		var ref = pathObj.options.ref;
+		if (_.isArray(pathObj.options.type)) return genArrayPath(pathObj);
+		else if (ref && dbCache[ref]) {
 			return this.pick(dbCache[ref])._id;
 		} else {
 			var seed = pathObj.options.seed;
