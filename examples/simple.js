@@ -1,6 +1,6 @@
 var mongoose = require('mongoose');
 var db = mongoose.connect('mongodb://localhost:27017/insert-db-name-here').connection;
-var mchance = require('./index')(db);
+var mchance = require('../')(db);
 
 db.model('User', new mongoose.Schema({
 	email: {
