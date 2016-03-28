@@ -22,10 +22,10 @@ module.exports = function (db, customSeed) {
   // generates an array path, using `seedn` to determine the number of elements
   // mchance.path calls this function for arrays
   // and this function calls mchance.path for each array element
-  function genArrayPath (pathObj) {
+  function genArrayPath (pathObj, dbCache) {
     var seedn = pathObj.options.seedn || 1;
     if (typeof seedn == 'function') seedn = seedn.call(mchance);
-    var innerSeed = mchance.path.bind(mchance, pathObj.caster);
+    var innerSeed = mchance.path.bind(mchance, pathObj.caster, dbCache);
     return mchance.n(innerSeed, seedn).filter(function (elem) {
       return elem !== undefined;
     });
@@ -40,7 +40,7 @@ module.exports = function (db, customSeed) {
       if (prob > Math.random()) return;
     }
     var ref = pathObj.options.ref;
-    if (_.isArray(pathObj.options.type)) return genArrayPath(pathObj);
+    if (_.isArray(pathObj.options.type)) return genArrayPath(pathObj, dbCache);
     else if (ref && dbCache[ref]) {
       return this.pick(dbCache[ref])._id;
     } else {
